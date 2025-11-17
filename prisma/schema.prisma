@@ -1,0 +1,63 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client"
+  output   = "../app/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Sentiment {
+  NEGATIVO
+  NEUTRO
+  POSITIVO
+}
+
+model Client {
+  id           Int            @id @default(autoincrement())
+  name         String
+  email        String
+  phone        String?
+  salesRep     String
+  meetingDate  DateTime
+  closed       Boolean
+  transcript   String
+
+  insight      ClientInsight?
+
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+
+  @@index([salesRep])
+  @@index([meetingDate])
+  @@index([closed])
+}
+
+model ClientInsight {
+  id                 Int              @id @default(autoincrement())
+  clientId           Int              @unique
+  client             Client           @relation(fields: [clientId], references: [id])
+
+  industry           String?
+  useCase            Json?            // array de strings
+  primaryPainPoints  Json?            // array de strings
+  sentiment          Sentiment?
+  transcriptWordCount   Int?
+  topKeywords           Json?
+  productFamiliarity    String?     // low/medium/high
+  engagementScore       Int?        // 1–5
+  leadSource         String?  // cómo conoció Vambe (webinar, google, amigo, etc.)
+  mainGoal           String?  // objetivo principal al usar Vambe
+  interactionVolumeRaw  String?     // número aproximado de interacciones (día/semana)
+  interactionVolumeLevel String?   // "LOW" | "MEDIUM" | "HIGH"
+
+  createdAt          DateTime         @default(now())
+  updatedAt          DateTime         @updatedAt
+}
