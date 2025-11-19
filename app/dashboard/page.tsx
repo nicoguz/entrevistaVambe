@@ -1,7 +1,17 @@
 // app/dashboard/page.tsx
 import prisma from "@/lib/prisma";
-import { normalizeIndustry, normalizeLeadSource } from "@/lib/analysis";
+import { normalizeIndustry, normalizeLeadSource, categorizeGoal } from "@/lib/analysis";
 import "@/app/globals.css";
+import NavBar from "@/app/components/navbar";
+import {
+  IndustryChart,
+  FamiliarityChart,
+  MeetingLengthChart,
+  InteractionVolumeChart,
+  MainGoalChart,
+  LeadSourceChart
+} from "./components/Charts";
+import { ClientsTable } from "./components/ClientsTable";
 
 export default async function DashboardPage() {
   const clients = await prisma.client.findMany({
@@ -58,6 +68,101 @@ export default async function DashboardPage() {
       if (b.closed !== a.closed) return b.closed - a.closed;
       return b.rate - a.rate;
     });
+  
+  // --- Gráfico 1: Ventas por industria ---
+  const industryChartData = [...industries.entries()].map(([industry, total]) => {
+    const closed = clients.filter(c => normalizeIndustry(c.insight?.industry || "Otro") === industry && c.closed).length;
+
+    return { industry, total, closed };
+  });
+
+  // --- Gráfico 2: Lead source ---
+  const leadSourceChartData = [...leadSources.entries()].map(
+    ([leadSource, total]) => {
+      const closed = clients.filter(
+        (c) =>
+          c.closed &&
+          normalizeLeadSource(c.insight?.leadSource || "Otro") === leadSource
+      ).length;
+
+      return {
+        leadSource,
+        total,
+        closed,
+      };
+    }
+  );
+
+  // --- Gráfico 3: Ventas por familiaridad ---
+  const familiarityCounts = new Map<string, { total: number; closed: number }>();
+
+  for (const c of clients) {
+    const fam = c.insight?.productFamiliarity || "unknown";
+    const current = familiarityCounts.get(fam) ?? { total: 0, closed: 0 };
+    current.total += 1;
+    if (c.closed) current.closed += 1;
+    familiarityCounts.set(fam, current);
+  }
+
+  const orderedLevels = ["UNKNOWN", "LOW", "MEDIUM", "HIGH"];
+  const familiarityChartData = [...familiarityCounts.entries()].map(
+    ([familiarity, { total, closed }]) => ({
+      familiarity,
+      total,
+      closed,
+    })
+  ).sort(
+    (a, b) =>
+      orderedLevels.indexOf(a.familiarity.toUpperCase()) -
+      orderedLevels.indexOf(b.familiarity.toUpperCase())
+  );
+
+  // --- Gráfico 4: Largo de reunión vs cierre ---
+  const meetingLengthData = clients.map(c => ({
+    words: c.insight?.transcriptWordCount ?? 0,
+    closed: c.closed ? 1 : 0,
+  })).sort((a, b) => a.words - b.words);
+
+  // --- Gráfico 5: Volumen de interacciones ---
+  const volumeCounts = new Map<string, { total: number; closed: number }>();
+
+  for (const c of clients) {
+    const vol = c.insight?.interactionVolumeLevel || "UNKNOWN";
+    const current = volumeCounts.get(vol) ?? { total: 0, closed: 0 };
+    current.total++;
+    if (c.closed) current.closed++;
+    volumeCounts.set(vol, current);
+  }
+
+  const interactionVolumeChartData = [...volumeCounts.entries()].map(
+    ([volume, { total, closed }]) => ({
+      volume,
+      total,
+      closed,
+    })
+  ).sort(
+    (a, b) =>
+      orderedLevels.indexOf(a.volume.toUpperCase()) -
+      orderedLevels.indexOf(b.volume.toUpperCase())
+  );;
+
+  // --- Gráfico 6: Objetivos principales agrupados ---
+  const goalCounts = new Map<string, number>();
+
+  for (const c of clients) {
+    const rawGoal = c.insight?.mainGoal;
+    if (!rawGoal) continue;
+
+    const category = categorizeGoal(rawGoal);
+    goalCounts.set(category, (goalCounts.get(category) ?? 0) + 1);
+  }
+
+  const mainGoalChartData = [...goalCounts.entries()].map(
+    ([category, count]) => ({
+      category,
+      count
+    })
+  );
 
   // Ordenar industrias (descendente por cantidad)
   const sortedIndustries = [...industries.entries()]
@@ -69,6 +174,7 @@ export default async function DashboardPage() {
 
   return (
     <main className="dashboard-main">
+      <NavBar />
       <header className="dashboard-header">
         <div>
           <h1 className="dashboard-title">Dashboard de clientes</h1>
@@ -82,8 +188,7 @@ export default async function DashboardPage() {
       {/* KPIs */}
       <section className="kpi-section">
         <div className="kpi-grid">
-          <KpiCard label="Total clientes" value={totalClients} />
-          <KpiCard label="Clientes con insights" value={withInsights} />
+          <KpiCard label="N° de clientes" value={totalClients} />
           <KpiCard label="Ventas cerradas" value={closedCount} />
           <KpiCard label="Ventas no cerradas" value={openCount} />
           <KpiCard
@@ -147,67 +252,18 @@ export default async function DashboardPage() {
         </div>
       </section>
 
-      {/* Tabla detalle */}
-      <section className="dashboard-table-section">
-        <div className="dashboard-table-header-row">
-          <h2 className="dashboard-card-title">Detalle de clientes</h2>
-          <p className="dashboard-table-hint">
-            {totalClients} registros totales · {withInsights} con insights
-          </p>
-        </div>
-        <div className="table-scroll-outer">
-          <div className="dashboard-table-wrapper table-scroll-inner">
-            <table className="dashboard-table">
-              <thead>
-                <tr>
-                  <Th>Cliente</Th>
-                  <Th>Vendedor</Th>
-                  <Th>Fecha reunión</Th>
-                  <Th>¿Cerró?</Th>
-                  <Th>Industria</Th>
-                  <Th>Lead source</Th>
-                  <Th>Engagement</Th>
-                  <Th>Volumen</Th>
-                  <Th>Objetivo principal</Th>
-                  <Th>Keywords</Th>
-                </tr>
-              </thead>
-              <tbody>
-                {clients.map((c) => (
-                  <tr key={c.id} className="dashboard-row">
-                    <Td className="font-medium">{c.name}</Td>
-                    <Td>{c.salesRep}</Td>
-                    <Td>{c.meetingDate.toISOString().slice(0, 10)}</Td>
-                    <Td>
-                      <span
-                        className={
-                          c.closed
-                            ? "status-pill status-pill--closed"
-                            : "status-pill status-pill--open"
-                        }
-                      >
-                        {c.closed ? "✅ Sí" : "❌ No"}
-                      </span>
-                    </Td>
-                    <Td>{c.insight?.industry ?? "—"}</Td>
-                    <Td>{c.insight?.leadSource ?? "—"}</Td>
-                    <Td>{c.insight?.engagementScore ?? "—"}</Td>
-                    <Td>{c.insight?.interactionVolumeRaw ?? "—"}</Td>
-                    <Td className="max-w-xs truncate">
-                      {c.insight?.mainGoal ?? "—"}
-                    </Td>
-                    <Td className="max-w-sm truncate">
-                      {Array.isArray(c.insight?.topKeywords)
-                        ? (c.insight!.topKeywords as string[]).join(", ")
-                        : "—"}
-                    </Td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
+      {/* Gráficos */}
+      <section className="dashboard-graphs">
+        <IndustryChart data={industryChartData} />
+        <LeadSourceChart data={leadSourceChartData} />
+        <FamiliarityChart data={familiarityChartData} />
+        <MeetingLengthChart data={meetingLengthData} />
+        <InteractionVolumeChart data={interactionVolumeChartData} />
+        <MainGoalChart data={mainGoalChartData} />
       </section>
+
+      {/* Tabla detalle */}
+      <ClientsTable clients={clients as any} />
     </main>
   );
 }
@@ -223,31 +279,5 @@ function KpiCard(props: {
       <div className="kpi-value">{props.value}</div>
       {props.helper && <div className="kpi-helper">{props.helper}</div>}
     </div>
-  );
-}
-
-function Th({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
-  return (
-    <th className="dashboard-th">
-      {children}
-    </th>
-  );
-}
-
-function Td({
-  children,
-  className,
-}: {
-  children: React.ReactNode;
-  className?: string;
-}) {
-  return (
-    <td className={`dashboard-td ${className ?? ""}`}>
-      {children}
-    </td>
   );
 }

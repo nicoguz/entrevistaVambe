@@ -1,7 +1,7 @@
-// app/upload/page.tsx
 "use client";
 
 import { useState, FormEvent } from "react";
+import NavBar from "@/app/components/navbar";
 
 export default function UploadPage() {
   const [file, setFile] = useState<File | null>(null);
@@ -23,12 +23,13 @@ export default function UploadPage() {
     setTotalToProcess(0);
 
     try {
-      // 1) obtener lista de clientes pendientes
       const pendingRes = await fetch("/api/pending-insights");
       const pendingData = await pendingRes.json();
 
       if (!pendingRes.ok) {
-        setProcessError(pendingData.error || "Error obteniendo clientes pendientes.");
+        setProcessError(
+          pendingData.error || "Error obteniendo clientes pendientes."
+        );
         setProcessing(false);
         return;
       }
@@ -44,7 +45,6 @@ export default function UploadPage() {
 
       setTotalToProcess(total);
 
-      // 2) procesar uno por uno
       let successCount = 0;
 
       for (let i = 0; i < clientIds.length; i++) {
@@ -67,7 +67,6 @@ export default function UploadPage() {
       setProcessStatus(
         `Insights procesados para ${successCount} de ${total} clientes pendientes.`
       );
-
     } catch (err) {
       console.error(err);
       setProcessError("Error de red al procesar insights.");
@@ -80,16 +79,15 @@ export default function UploadPage() {
     setProcessStatus(null);
     setProcessError(null);
     setProcessing(true);
-    // setProcessedCount(0);
-    // setTotalToProcess(0);
 
     try {
-      // 1) obtener lista de clientes pendientes
       const pendingRes = await fetch("/api/pending-insights");
       const pendingData = await pendingRes.json();
 
       if (!pendingRes.ok) {
-        setProcessError(pendingData.error || "Error obteniendo clientes pendientes.");
+        setProcessError(
+          pendingData.error || "Error obteniendo clientes pendientes."
+        );
         setProcessing(false);
         return;
       }
@@ -103,12 +101,6 @@ export default function UploadPage() {
         return;
       }
 
-      // setTotalToProcess(total);
-
-      // 2) procesar uno por uno
-      // let successCount = 0;
-
-      // for (let i = 0; i < clientIds.length; i++) {
       const id = clientIds[0];
 
       const res = await fetch(`/api/process-insight/${id}`, {
@@ -116,21 +108,13 @@ export default function UploadPage() {
       });
 
       if (res.ok) {
-        setProcessStatus(
-          `Insight procesado! ID: ${id}`
-        );
+        setProcessStatus(`Insight procesado! ID: ${id}`);
       } else {
         const errJson = await res.json().catch(() => null);
         console.error("Error procesando insight para cliente", id, errJson);
       }
 
-      // setProcessedCount((prev) => prev + 1);
-      // }
-
-      setProcessStatus(
-        `Insight procesado! ID: ${id}`
-      );
-
+      setProcessStatus(`Insight procesado! ID: ${id}`);
     } catch (err) {
       console.error(err);
       setProcessError("Error de red al procesar insights.");
@@ -174,123 +158,121 @@ export default function UploadPage() {
   };
 
   const progressPercent =
-    totalToProcess > 0 ? Math.round((processedCount / totalToProcess) * 100) : 0;
+    totalToProcess > 0
+      ? Math.round((processedCount / totalToProcess) * 100)
+      : 0;
 
   return (
-    <main style={{ padding: "2rem", fontFamily: "system-ui" }}>
-      <h1>Subir CSV de clientes</h1>
-      <p style={{ marginBottom: "1rem" }}>
-        Selecciona el archivo CSV para cargar los clientes en la base de datos.
-      </p>
+    <main className="upload-main">
+      <NavBar />
+      <section className="upload-card">
+        <header className="upload-header">
+          <h1 className="upload-title">Subir CSV de clientes</h1>
+          <p className="upload-subtitle">
+            Carga tus reuniones de ventas en formato CSV y procesa insights con el
+            modelo.
+          </p>
+        </header>
 
-      <form onSubmit={handleSubmit} style={{ marginBottom: "1.5rem" }}>
-        <input
-          type="file"
-          accept=".csv,text/csv"
-          style={{
-            border: "1px solid #bdbdbdff",
-            borderRadius: "4px",
-            textAlign: "center",
-            alignSelf: "center",
-          }}
-          onChange={(e) => {
-            const f = e.target.files?.[0] ?? null;
-            setFile(f);
-          }}
-        />
-        <button
-          type="submit"
-          style={{
-            marginLeft: "0.75rem",
-            padding: "0.4rem 0.9rem",
-            cursor: "pointer",
-            border: "1px solid #bdbdbdff",
-            borderRadius: "4px",
-          }}
-        >
-          Subir
-        </button>
-      </form>
+        {/* Subida de CSV */}
+        <section className="upload-section">
+          <h2 className="upload-section-title">1. Cargar archivo CSV</h2>
+          <p className="upload-section-text">
+            Selecciona el archivo CSV para cargar los clientes en la base de datos.
+          </p>
 
-      {uploadStatus && (
-        <p style={{ marginTop: "1rem", color: "green" }}>
-          {uploadStatus}
-        </p>
-      )}
-      {uploadError && (
-        <p style={{ marginTop: "1rem", color: "red" }}>
-          {uploadError}
-        </p>
-      )}
+          <form onSubmit={handleSubmit} className="upload-form">
+            <label className="upload-file-label">
+              <span className="upload-file-text">
+                {file ? file.name : "Seleccionar archivo CSV"}
+              </span>
+              <input
+                type="file"
+                accept=".csv,text/csv"
+                className="upload-file-input"
+                onChange={(e) => {
+                  const f = e.target.files?.[0] ?? null;
+                  setFile(f);
+                }}
+              />
+            </label>
 
-      <hr style={{ margin: "2rem 0" }} />
+            <button
+              type="submit"
+              className="upload-button upload-button--primary"
+            >
+              Subir y procesar CSV
+            </button>
+          </form>
 
-      <h2>Procesar insights con LLM</h2>
-      <p style={{ marginBottom: "0.75rem" }}>
-        Esto analizará las transcripciones de los clientes que todavía no tengan insights generados.
-      </p>
+          {uploadStatus && (
+            <p className="upload-message upload-message--success">
+              {uploadStatus}
+            </p>
+          )}
+          {uploadError && (
+            <p className="upload-message upload-message--error">
+              {uploadError}
+            </p>
+          )}
+        </section>
 
-      <button
-        onClick={handleProcessInsights}
-        disabled={processing}
-        style={{
-          padding: "0.4rem 0.9rem",
-          cursor: processing ? "not-allowed" : "pointer",
-          opacity: processing ? 0.7 : 1,
-          border: "1px solid #bdbdbdff",
-          borderRadius: "4px",
-        }}
-      >
-        {processing ? "Procesando..." : "Procesar insights"}
-      </button>
+        <hr className="upload-divider" />
 
-      <button
-        onClick={handleSingleProcessInsights}
-        disabled={processing}
-        style={{
-          padding: "0.4rem 0.9rem",
-          cursor: processing ? "not-allowed" : "pointer",
-          opacity: processing ? 0.7 : 1,
-          border: "1px solid #bdbdbdff",
-          borderRadius: "4px",
-        }}
-      >
-        {processing ? "Procesando..." : "Procesar un insight"}
-      </button>
+        {/* Procesar insights */}
+        <section className="upload-section">
+          <h2 className="upload-section-title">2. Procesar insights con LLM</h2>
+          <p className="upload-section-text">
+            Analiza las transcripciones de los clientes que todavía no tengan
+            insights generados.
+          </p>
 
-      {/* Barra de progreso */}
-      {totalToProcess > 0 && (
-        <div style={{ marginTop: "0.5rem", maxWidth: "400px" }}>
-          <div
-            style={{
-              height: "10px",
-              borderRadius: "999px",
-              border: "1px solid #ccc",
-              overflow: "hidden",
-              background: "#f5f5f5",
-            }}
-          >
-            <div
-              style={{
-                height: "100%",
-                width: `${progressPercent}%`,
-                transition: "width 0.2s ease-out",
-                background: "#4caf50",
-              }}
-            />
+          <div className="upload-actions">
+            <button
+              onClick={handleProcessInsights}
+              disabled={processing}
+              className="upload-button upload-button--secondary"
+            >
+              {processing ? "Procesando..." : "Procesar todos los pendientes"}
+            </button>
+
+            <button
+              onClick={handleSingleProcessInsights}
+              disabled={processing}
+              className="upload-button upload-button--ghost"
+            >
+              {processing ? "Procesando..." : "Procesar solo uno"}
+            </button>
           </div>
-          <div style={{ marginTop: "0.25rem", fontSize: "0.9rem" }}>
-            Procesados {processedCount} de {totalToProcess} ({progressPercent}%)
-          </div>
-        </div>
-      )}
 
-      {processStatus && (
-        <p style={{ marginTop: "0.5rem", color: "green" }}>{processStatus}</p>
-      )}
-      {processError && (
-        <p style={{ marginTop: "0.5rem", color: "red" }}>{processError}</p>
-      )}
+          {/* Barra de progreso */}
+          {totalToProcess > 0 && (
+            <div className="upload-progress">
+              <div className="upload-progress-bar">
+                <div
+                  className="upload-progress-bar-fill"
+                  style={{ width: `${progressPercent}%` }}
+                />
+              </div>
+              <div className="upload-progress-text">
+                Procesados {processedCount} de {totalToProcess} (
+                {progressPercent}%)
+              </div>
+            </div>
+          )}
+
+          {processStatus && (
+            <p className="upload-message upload-message--success">
+              {processStatus}
+            </p>
+          )}
+          {processError && (
+            <p className="upload-message upload-message--error">
+              {processError}
+            </p>
+          )}
+        </section>
+      </section>
     </main>
   );
 }

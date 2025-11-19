@@ -106,3 +106,24 @@ export function normalizeLeadSource(raw: string): string {
 
   return raw;
 }
+
+export function categorizeGoal(goal: string): string {
+  const g = goal.toLowerCase();
+
+  if (g.includes("automat") || g.includes("tiempo") || g.includes("eficiencia") || g.includes("opti") || g.includes("agiliz"))
+    return "Productividad / Automatización";
+
+  if (g.includes("insight") || g.includes("anal") || g.includes("report"))
+    return "Insights / Reporting";
+
+  if (g.includes("venta") || g.includes("prospect") || g.includes("pipeline"))
+    return "Ventas y Pipeline";
+
+  if (g.includes("cliente") || g.includes("soporte"))
+    return "Atención al Cliente / Soporte";
+
+  if (g.includes("compet") || g.includes("benchmark"))
+    return "Competencia / Benchmarking";
+
+  return "Otro";
+}
