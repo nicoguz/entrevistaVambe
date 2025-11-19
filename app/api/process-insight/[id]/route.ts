@@ -5,11 +5,12 @@ import { getTranscriptWordCount, getTopKeywords } from "@/lib/analysis";
 import { classifyTranscript } from "@/lib/llm";
 
 interface RouteParams {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }
 
 export async function POST(_req: Request, { params }: RouteParams) {
-  const clientId = Number(params.id);
+  const { id } = await params;
+  const clientId = Number(id);
   if (Number.isNaN(clientId)) {
     return NextResponse.json({ error: "ID inválido" }, { status: 400 });
   }

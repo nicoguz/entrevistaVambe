@@ -25,3 +25,84 @@ export function getTopKeywords(text: string, topN = 10) {
     .sort((a, b) => b[1] - a[1])
     .slice(0, topN);
 }
+
+export function normalizeIndustry(raw: string): string {
+  const text = raw.toLowerCase();
+
+  if (
+    text.includes("financ")
+    || text.includes("banca")
+  ) return "Finanzas";
+
+  if (
+    text.includes("salud")
+    || text.includes("clinic")
+    || text.includes("clínic")
+    || text.includes("medic")
+    || text.includes("odonto")
+  ) return "Salud";
+
+  if (text.includes("e-commerce") || text.includes("retail") || text.includes("tienda"))
+    return "E-Commerce / Retail";
+
+  if (text.includes("logist") || text.includes("logíst")) return "Logística";
+
+  if (text.includes("viajes") || text.includes("turismo")) return "Turismo";
+
+  if (text.includes("tecno") || text.includes("software")) return "Tecnología";
+
+  if (text.includes("educ")) return "Educación";
+
+  if (text.includes("legal") || text.includes("jurid")) return "Legal";
+
+  if (
+    text.includes("belleza")
+    || text.includes("cosméti")
+    || text.includes("fashion")
+  ) return "Estética";
+
+  if (
+    text.includes("catering")
+    || text.includes("restaurant")
+    || text.includes("pastel")
+  ) return "Alimentos";
+
+  if (
+    text.includes("consult")
+    // || text.includes("restaurant")
+    // || text.includes("pastel")
+  ) return "Consultorías";
+
+  return "Otros";
+}
+
+export function normalizeLeadSource(raw: string): string {
+  const t = raw.toLowerCase();
+
+  if (t.includes("google") || t.includes("búsqueda") || t.includes("online") || t.includes("linea") || t.includes("linkedin"))
+    return "Búsqueda web / Online";
+
+  if (
+    t.includes("conferencia")
+    || t.includes("seminario")
+    || t.includes("charla")
+    || t.includes("webinar")
+    || t.includes("evento")
+    || t.includes("feria")
+    || t.includes("taller")
+    || t.includes("conferen")
+  ) {
+    return "Evento";
+  }
+
+  if (t.includes("artículo") || t.includes("blog") || t.includes("foro"))
+    return "Artículo / Blog";
+
+  if (t.includes("podcast"))
+    return "Podcast / Media";
+
+  if (t.includes("amigo") || t.includes("colega") || t.includes("refer") || t.includes("recomenda"))
+    return "Referencia";
+
+  return raw;
+}

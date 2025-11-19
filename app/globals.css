@@ -5,13 +5,6 @@
   --foreground: #171717;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
 @media (prefers-color-scheme: dark) {
   :root {
     --background: #ededed;
@@ -23,4 +16,282 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
+}
+
+/* Layout general dashboard */
+.dashboard-main {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2.5rem 1.5rem 3rem;
+}
+
+.dashboard-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.dashboard-title {
+  font-size: 1.9rem;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  margin-bottom: 0.4rem;
+}
+
+.dashboard-subtitle {
+  font-size: 0.95rem;
+  color: #6b7280; /* slate-500 */
+  max-width: 40rem;
+}
+
+/* KPIs */
+.kpi-section {
+  margin-bottom: 2.5rem;
+}
+
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1rem;
+}
+
+.kpi-card {
+  border-radius: 0.9rem;
+  border: 1px solid #e5e7eb; /* gray-200 */
+  padding: 1rem 1.1rem;
+  background: radial-gradient(circle at top left, #eff6ff 0, #ffffff 45%);
+  box-shadow: 0 6px 15px rgba(15, 23, 42, 0.04);
+  transition: transform 120ms ease, box-shadow 120ms ease, border-color 120ms ease;
+}
+
+.kpi-card:hover {
+  transform: translateY(-1px);
+  border-color: #bfdbfe; /* blue-200 */
+  box-shadow: 0 10px 25px rgba(15, 23, 42, 0.08);
+}
+
+.kpi-label {
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #9ca3af; /* gray-400 */
+  margin-bottom: 0.25rem;
+}
+
+.kpi-value {
+  font-size: 1.6rem;
+  font-weight: 800;
+  color: #111827; /* gray-900 */
+}
+
+.kpi-helper {
+  font-size: 0.7rem;
+  color: #9ca3af;
+  margin-top: 0.2rem;
+}
+
+/* Bloques de categorías (ya tenías esta clase, solo ajusto) */
+.dashboard-categories {
+  display: grid;
+  gap: 1.75rem;
+  margin-bottom: 2.5rem;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+}
+
+/* Tarjetas genéricas */
+.dashboard-card {
+  border-radius: 0.9rem;
+  border: 1px solid #e5e7eb;
+  padding: 1.1rem 1.25rem;
+  background: #ffffff;
+  box-shadow: 0 4px 10px rgba(15, 23, 42, 0.03);
+}
+
+.dashboard-card-title {
+  font-size: 1.05rem;
+  font-weight: 600;
+  margin-bottom: 0.6rem;
+  color: #111827;
+}
+
+/* Listas de distribución */
+.dashboard-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.dashboard-list-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  font-size: 0.9rem;
+  padding: 0.4rem 0.2rem;
+  border-bottom: 1px dashed #f3f4f6;
+}
+
+.dashboard-list-item:last-child {
+  border-bottom: none;
+}
+
+.dashboard-list-label {
+  font-weight: 500;
+  color: #374151; /* gray-700 */
+}
+
+.dashboard-list-value {
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  color: #1d4ed8; /* blue-700 */
+}
+
+/* Tabla detalle */
+.dashboard-table-section {
+  margin-top: 0.5rem;
+}
+
+.dashboard-table-header-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 0.5rem;
+}
+
+.dashboard-table-hint {
+  font-size: 0.8rem;
+  color: #9ca3af;
+}
+
+.dashboard-table-wrapper {
+  border-radius: 0.9rem;
+  border: 1px solid #e5e7eb;
+  background: #ffffff;
+  box-shadow: 0 4px 10px rgba(15, 23, 42, 0.03);
+  /* importante: que se pueda desbordar hacia los lados */
+  min-width: max-content;
+}
+
+.dashboard-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+  min-width: 900px;
+}
+
+/* Contenedor que tiene el scrollbar pero visualmente arriba */
+.table-scroll-outer {
+  width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  transform: rotateX(180deg); /* mueve la barra arriba */
+}
+
+/* Volvemos a poner el contenido "en su lugar" */
+.table-scroll-inner {
+  transform: rotateX(180deg);
+}
+
+.dashboard-th {
+  text-align: left;
+  border-bottom: 1px solid #e5e7eb;
+  padding: 0.6rem 0.75rem;
+  background: #f9fafb;
+  white-space: nowrap;
+  font-weight: 600;
+  color: #4b5563; /* gray-600 */
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+.dashboard-td {
+  border-bottom: 1px solid #f3f4f6;
+  padding: 0.55rem 0.75rem;
+  vertical-align: top;
+  white-space: nowrap;
+  color: #374151;
+}
+
+.dashboard-row:nth-child(even) .dashboard-td {
+  background-color: #fcfcfd;
+}
+
+.dashboard-row:hover .dashboard-td {
+  background-color: #eff6ff; /* blue-50 */
+}
+
+/* Pill de estado cerrado / no cerrado */
+.status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.78rem;
+  font-weight: 600;
+  padding: 0.2rem 0.5rem;
+  border-radius: 9999px;
+  border: 1px solid transparent;
+}
+
+.status-pill--closed {
+  background: #ecfdf3;
+  color: #166534; /* green-800 */
+  border-color: #bbf7d0; /* green-200 */
+}
+
+.status-pill--open {
+  background: #fef2f2;
+  color: #b91c1c; /* red-700 */
+  border-color: #fecaca; /* red-200 */
+}
+
+/* Responsivo */
+@media (max-width: 768px) {
+  .dashboard-main {
+    padding-inline: 1rem;
+  }
+
+  .dashboard-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .dashboard-table-wrapper {
+    border-radius: 0.75rem;
+  }
+}
+
+
+/* Variación para items apilados (título + barrita) */
+.dashboard-list-item--stacked {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.35rem;
+}
+
+/* Fila superior: nombre del rep + resumen numérico */
+.dashboard-list-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+/* Barra de porcentaje de cierre */
+.dashboard-bar {
+  width: 100%;
+  height: 6px;
+  border-radius: 9999px;
+  background: #e5e7eb; /* gray-200 */
+  overflow: hidden;
+}
+
+.dashboard-bar-fill {
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(to right, #2563eb, #22c55e);
+  transition: width 160ms ease-out;
 }
