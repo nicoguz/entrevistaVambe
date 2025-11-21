@@ -5,6 +5,8 @@ Decidí vercel por la facilidad y rapidez de levantar una máquina.
 
 Por otro lado, la base de datos quedó alojada en prisma (dentro de mi cuenta personal). Ocupé este servicio también por la facilidad de uso con next.js, además de aprovechar la oportunidad de aprender una herramienta nueva.
 
+La arquitectura es bastante simple, es un monolito, principalmente por la rapidez de desarrollo y prueba de concepto.
+
 No es necesario cargar el csv del enunciado, los datos ya fueron procesados y guardados. Sin embargo, se puede cargar otro set de datos de la misma estructura para ampliar la base de datos.
 
 A grandes rasgos, la app tiene 2 funcionalidades:
@@ -18,6 +20,7 @@ A grandes rasgos, la app tiene 2 funcionalidades:
 * Podrán notar que el modelo ClientInsights tiene más campos de los que se muestran en la app, como keywords o painPoints. Esto resultó de mi experimentación con el set de datos. Creo que en este punto no hay info valiosa para mostrar dentro de esas dimensiones, pero definitivamente pueden ser características importantes para un dataset más grande o con transcripciones más largas.  
 * Algo similar ocurre con los campos engagement y sentiment. Como las transcripciones son cortas y más o menos homogeneas, el modelo de IA detecto sentimiento positivo para todas las reuniones y un engament de 4 para casi todas las entrevistas. Con este dataset esta info no es tan valiosa, pero para transcripciones más largas y posiblemente más complejas definitivamente añadiría un punto interesante a analizar contra las ventas cerradas.
 * Por último, la variable Volumen de interacciones se refiere a la cantidad de solicitudes que los clientes indican tener en promedio. Se categorizan en low, medium o high, dejando la categorización al LLM según lo que mencionan en las reuniones. Frases como "Tenemos 500 solicitudes en un día peak" son las que determinan esta variable. Por otro lado, familiaridad se refiere a que tanto conocían/entendían vambe antes de la reunión (inferido por LLM).
+* Ocupé Gemini principalmente porque el setup es simple y ofrece una API gratuita, a diferencia de OpenAI que cobra por su API. El modelo no da el mejor rendimiento, pero cumple con lo básico.
 
 ## Configuración
 Para ejecutar en local primero se debe correr
@@ -28,6 +31,9 @@ npm install
 Además se debe configurar un archivo `.env` con las siguientes variables:
 * `DATABASE_URL`: Url que apunte a una BD en prisma.
 * `GEMINI_API_KEY`: Api key para usar Gemini.
+
+Importante notar que para su correcto funcionamiento en local se necesita levantar una BD (remota) en prisma o, en su defecto, pueden pedirme mi url para ocupar la misma que usé en producción.
+Además se necesita una API key de gemini. Nuevamente pueden pedirme la mia si no logran obtener una gratis.
 
 ## Comandos de ejecución
 
